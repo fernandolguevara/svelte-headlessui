@@ -1,129 +1,140 @@
 <script lang="ts" context="module">
-  type TListboxOptionProps<
-    TSlotProps extends {},
-    TAsProp extends SupportedAs
-  > = TPassThroughProps<TSlotProps, TAsProp, "li"> & {
+  type TListboxOptionProps<TSlotProps extends {}, TAsProp extends SupportedAs> = TPassThroughProps<
+    TSlotProps,
+    TAsProp,
+    'li'
+  > & {
     /** The option value */
-    value: unknown;
+    value: unknown
     /** Whether the option should be disabled for keyboard navigation and ARIA purposes */
-    disabled?: boolean;
-  };
+    disabled?: boolean
+  }
 </script>
 
 <script lang="ts">
-  import { onDestroy, onMount, tick } from "svelte";
-  import { ListboxStates, useListboxContext } from "./Listbox.svelte";
-  import { useId } from "$lib/hooks/use-id";
-  import { Focus } from "$lib/utils/calculate-active-index";
-  import Render from "$lib/utils/Render.svelte";
-  import { forwardEventsBuilder } from "$lib/internal/forwardEventsBuilder";
-  import type { SupportedAs } from "$lib/internal/elements";
-  import { get_current_component } from "svelte/internal";
-  import type { HTMLActionArray } from "$lib/hooks/use-actions";
-  import type { TPassThroughProps } from "$lib/types";
+  import {onDestroy, onMount, tick} from 'svelte'
+  import {ListboxStates, useListboxContext, ValueMode} from './Listbox.svelte'
+  import {useId} from '$lib/hooks/use-id'
+  import {Focus} from '$lib/utils/calculate-active-index'
+  import Render from '$lib/utils/Render.svelte'
+  import {forwardEventsBuilder} from '$lib/internal/forwardEventsBuilder'
+  import type {SupportedAs} from '$lib/internal/elements'
+  import {get_current_component} from 'svelte/internal'
+  import type {HTMLActionArray} from '$lib/hooks/use-actions'
+  import type {TPassThroughProps} from '$lib/types'
+  import {match} from '$lib/utils/match'
 
   /***** Props *****/
-  type TAsProp = $$Generic<SupportedAs>;
-  type $$Props = TListboxOptionProps<typeof slotProps, TAsProp>;
+  type TAsProp = $$Generic<SupportedAs>
+  type $$Props = TListboxOptionProps<typeof slotProps, TAsProp>
 
-  export let as: SupportedAs = "li";
-  export let use: HTMLActionArray = [];
-  export let value: unknown;
-  export let disabled = false;
+  export let as: SupportedAs = 'li'
+  export let use: HTMLActionArray = []
+  export let value: unknown
+  export let disabled = false
 
   /***** Events *****/
-  const forwardEvents = forwardEventsBuilder(get_current_component());
+  const forwardEvents = forwardEventsBuilder(get_current_component())
 
   /***** Component *****/
-  let api = useListboxContext("ListboxOption");
-  let id = `headlessui-listbox-option-${useId()}`;
+  let api = useListboxContext('ListboxOption')
+  let id = `headlessui-listbox-option-${useId()}`
 
-  let buttonRef = $api.buttonRef;
+  let buttonRef = $api.buttonRef
+  let isFirstSelected = false
 
   $: active =
-    $api.activeOptionIndex !== null
-      ? $api.options[$api.activeOptionIndex].id === id
-      : false;
+    $api.activeOptionIndex !== null ? $api.options[$api.activeOptionIndex].id === id : false
 
-  $: selected = $api.value === value;
+  $: selected = match($api.mode, {
+    [ValueMode.Single]: () => $api.value === value,
+    [ValueMode.Multi]: () => ($api.value as unknown[]).includes(value)
+  })
+
+  $: isFirstSelected = match($api.mode, {
+    [ValueMode.Single]: () => selected,
+    [ValueMode.Multi]: () =>
+      $api.options.find((option: unknown) => ($api.value as unknown[]).includes(option))?.id === id
+  })
+
   $: dataRef = {
     disabled,
     value,
-    textValue: "",
-  };
+    textValue: ''
+  }
 
   onMount(() => {
-    let textValue = document
-      .getElementById(id)
-      ?.textContent?.toLowerCase()
-      .trim();
-    if (textValue !== undefined) dataRef.textValue = textValue;
-  });
+    let textValue = document.getElementById(id)?.textContent?.toLowerCase().trim()
+    if (textValue !== undefined) dataRef.textValue = textValue
+  })
 
-  onMount(() => $api.registerOption(id, dataRef));
-  onDestroy(() => $api.unregisterOption(id));
+  onMount(() => $api.registerOption(id, dataRef))
+  onDestroy(() => $api.unregisterOption(id))
 
-  let oldState = $api.listboxState;
-  let oldSelected = selected;
-  let oldActive = active;
-  async function updateFocus(
-    newState: ListboxStates,
-    newSelected: boolean,
-    newActive: boolean
-  ) {
+  let oldState = $api.listboxState
+  let oldSelected = selected
+  let oldActive = active
+  async function updateFocus(newState: ListboxStates, newSelected: boolean, newActive: boolean) {
     // Wait for a tick since we need to ensure registerOption has been applied
-    await tick();
+    await tick()
     if (newState !== oldState || newSelected !== oldSelected) {
       if (newState === ListboxStates.Open && newSelected) {
-        $api.goToOption(Focus.Specific, id);
+        match($api.mode, {
+          [ValueMode.Multi]: () => {
+            if (isFirstSelected) $api.goToOption(Focus.Specific, id)
+          },
+          [ValueMode.Single]: () => {
+            $api.goToOption(Focus.Specific, id)
+          }
+        })
       }
     }
     if (newState !== oldState || newActive !== oldActive) {
       if (newState === ListboxStates.Open && newActive) {
-        document.getElementById(id)?.scrollIntoView?.({ block: "nearest" });
+        document.getElementById(id)?.scrollIntoView?.({block: 'nearest'})
       }
     }
-    oldState = newState;
-    oldSelected = newSelected;
-    oldActive = newActive;
+    oldState = newState
+    oldSelected = newSelected
+    oldActive = newActive
   }
-  $: updateFocus($api.listboxState, selected, active);
+  $: updateFocus($api.listboxState, selected, active)
 
   async function handleClick(e: CustomEvent) {
-    let event = e as any as MouseEvent;
-    if (disabled) return event.preventDefault();
-    $api.select(value);
-    $api.closeListbox();
-    await tick();
-    $buttonRef?.focus({ preventScroll: true });
+    let event = e as any as MouseEvent
+    if (disabled) return event.preventDefault()
+    $api.select(value)
+    if ($api.mode === ValueMode.Single) $api.closeListbox()
+    await tick()
+    $buttonRef?.focus({preventScroll: true})
   }
 
   function handleFocus() {
-    if (disabled) return $api.goToOption(Focus.Nothing);
-    $api.goToOption(Focus.Specific, id);
+    if (disabled) return $api.goToOption(Focus.Nothing)
+    $api.goToOption(Focus.Specific, id)
   }
 
   function handleMove() {
-    if (disabled) return;
-    if (active) return;
-    $api.goToOption(Focus.Specific, id);
+    if (disabled) return
+    if (active) return
+    $api.goToOption(Focus.Specific, id)
   }
 
   function handleLeave() {
-    if (disabled) return;
-    if (!active) return;
-    $api.goToOption(Focus.Nothing);
+    if (disabled) return
+    if (!active) return
+    $api.goToOption(Focus.Nothing)
   }
 
   $: propsWeControl = {
     id,
-    role: "option",
+    role: 'option',
     tabIndex: disabled === true ? undefined : -1,
-    "aria-disabled": disabled === true ? true : undefined,
-    "aria-selected": selected === true ? selected : undefined,
-  };
+    'aria-disabled': disabled === true ? true : undefined,
+    'aria-selected': selected === true ? selected : undefined
+  }
 
-  $: slotProps = { active, selected, disabled };
+  $: slotProps = {active, selected, disabled}
 </script>
 
 <Render
@@ -132,7 +143,7 @@
   {as}
   {slotProps}
   use={[...use, forwardEvents]}
-  name={"ListboxOption"}
+  name={'ListboxOption'}
   on:click={handleClick}
   on:focus={handleFocus}
   on:pointermove={handleMove}

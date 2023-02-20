@@ -1,9 +1,9 @@
 <script lang="ts">
-  import Dialog from "./Dialog.svelte";
-  import DialogOverlay from "./DialogOverlay.svelte";
+  import Dialog from './Dialog.svelte'
+  import DialogOverlay from './DialogOverlay.svelte'
 
-  export let level = 1;
-  let showChild = false;
+  export let level = 1
+  let showChild = false
 </script>
 
 <Dialog open={true} on:close>

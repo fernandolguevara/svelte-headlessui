@@ -1,11 +1,11 @@
-import rehypeSlug from "rehype-slug";
-import rehypeAutolinkHeadings from "rehype-autolink-headings";
+import rehypeSlug from 'rehype-slug'
+import rehypeAutolinkHeadings from 'rehype-autolink-headings'
 
 const config = {
-  extensions: [".svelte.md", ".md", ".svx"],
+  extensions: ['.svelte.md', '.md', '.svx'],
 
   remarkPlugins: [],
-  rehypePlugins: [rehypeSlug, [rehypeAutolinkHeadings, { behavior: "wrap" }]],
-};
+  rehypePlugins: [rehypeSlug, [rehypeAutolinkHeadings, {behavior: 'wrap'}]]
+}
 
-export default config;
+export default config

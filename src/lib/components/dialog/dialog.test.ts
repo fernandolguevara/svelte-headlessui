@@ -1,9 +1,9 @@
-import { Dialog, DialogDescription, DialogOverlay, DialogTitle } from ".";
-import TestTabSentinel from "./_TestTabSentinel.svelte";
-import ManagedDialog from "./_ManagedDialog.svelte";
-import NestedTestComponent from "./_NestedTestComponent.svelte";
-import { suppressConsoleLogs } from "$lib/test-utils/suppress-console-logs";
-import { render } from "@testing-library/svelte";
+import {Dialog, DialogDescription, DialogOverlay, DialogTitle} from '.'
+import TestTabSentinel from './_TestTabSentinel.svelte'
+import ManagedDialog from './_ManagedDialog.svelte'
+import NestedTestComponent from './_NestedTestComponent.svelte'
+import {suppressConsoleLogs} from '$lib/test-utils/suppress-console-logs'
+import {render} from '@testing-library/svelte'
 import {
   assertActiveElement,
   assertDialog,
@@ -15,46 +15,46 @@ import {
   getDialog,
   getDialogOverlay,
   getDialogOverlays,
-  getDialogs,
-} from "$lib/test-utils/accessibility-assertions";
-import { click, Keys, press } from "$lib/test-utils/interactions";
-import Transition from "$lib/components/transitions/TransitionRoot.svelte";
-import { tick } from "svelte";
-import svelte from "svelte-inline-compile";
-import { writable } from "svelte/store";
+  getDialogs
+} from '$lib/test-utils/accessibility-assertions'
+import {click, Keys, press} from '$lib/test-utils/interactions'
+import Transition from '$lib/components/transitions/TransitionRoot.svelte'
+import {tick} from 'svelte'
+import svelte from 'svelte-inline-compile'
+import {writable} from 'svelte/store'
 
-let mockId = 0;
-jest.mock("../../hooks/use-id", () => {
+let mockId = 0
+jest.mock('../../hooks/use-id', () => {
   return {
-    useId: jest.fn(() => ++mockId),
-  };
-});
+    useId: jest.fn(() => ++mockId)
+  }
+})
 
 // @ts-expect-error
 global.IntersectionObserver = class FakeIntersectionObserver {
-  observe() { }
-  disconnect() { }
-};
+  observe() {}
+  disconnect() {}
+}
 
-beforeEach(() => (mockId = 0));
-afterAll(() => jest.restoreAllMocks());
+beforeEach(() => (mockId = 0))
+afterAll(() => jest.restoreAllMocks())
 
-describe("Safe guards", () => {
+describe('Safe guards', () => {
   it.each([
-    ["DialogOverlay", DialogOverlay],
-    ["DialogTitle", DialogTitle],
+    ['DialogOverlay', DialogOverlay],
+    ['DialogTitle', DialogTitle]
   ])(
-    "should error when we are using a <%s /> without a parent <Dialog />",
+    'should error when we are using a <%s /> without a parent <Dialog />',
     suppressConsoleLogs((name, Component) => {
       expect(() => render(Component)).toThrowError(
         `<${name} /> is missing a parent <Dialog /> component.`
-      );
-      expect.hasAssertions();
+      )
+      expect.hasAssertions()
     })
-  );
+  )
 
   it(
-    "should be possible to render a Dialog without crashing",
+    'should be possible to render a Dialog without crashing',
     suppressConsoleLogs(async () => {
       render(svelte`
         <Dialog open={false} on:close={console.log}>
@@ -66,27 +66,25 @@ describe("Safe guards", () => {
         </Dialog>
       `)
 
-      assertDialog({ state: DialogState.InvisibleUnmounted });
+      assertDialog({state: DialogState.InvisibleUnmounted})
     })
-  );
-});
+  )
+})
 
-describe("Rendering", () => {
-  describe("Dialog", () => {
+describe('Rendering', () => {
+  describe('Dialog', () => {
     it(
-      "should complain when the `open` and `onClose` prop are missing",
+      'should complain when the `open` and `onClose` prop are missing',
       suppressConsoleLogs(async () => {
-        expect(() =>
-          render(Dialog, { as: "div" })
-        ).toThrowErrorMatchingInlineSnapshot(
+        expect(() => render(Dialog, {as: 'div'})).toThrowErrorMatchingInlineSnapshot(
           `"You forgot to provide an \`open\` prop to the \`Dialog\` component."`
-        );
-        expect.hasAssertions();
+        )
+        expect.hasAssertions()
       })
-    );
+    )
 
     it(
-      "should complain when an `open` prop is not a boolean",
+      'should complain when an `open` prop is not a boolean',
       suppressConsoleLogs(async () => {
         expect(() =>
           render(svelte`
@@ -94,10 +92,10 @@ describe("Rendering", () => {
            `)
         ).toThrowErrorMatchingInlineSnapshot(
           `"You provided an \`open\` prop to the \`Dialog\`, but the value is not a boolean. Received: null"`
-        );
-        expect.hasAssertions();
+        )
+        expect.hasAssertions()
       })
-    );
+    )
 
     it(
       'Dialog should have slot props',
@@ -115,11 +113,11 @@ describe("Rendering", () => {
           </Dialog>
         `)
 
-        assertDialog({ state: DialogState.InvisibleUnmounted })
+        assertDialog({state: DialogState.InvisibleUnmounted})
 
         await click(document.getElementById('trigger'))
 
-        assertDialog({ state: DialogState.Visible, textContent: JSON.stringify({ open: true }) })
+        assertDialog({state: DialogState.Visible, textContent: JSON.stringify({open: true})})
       })
     )
 
@@ -136,7 +134,7 @@ describe("Rendering", () => {
         `)
 
       // Wait for the focus to take effect
-      await tick();
+      await tick()
 
       // Let's verify that the Dialog is already there
       expect(getDialog()).not.toBe(null)
@@ -145,7 +143,7 @@ describe("Rendering", () => {
 
     it('should be possible to always render the Dialog if we provide it a `static` prop (and toggle focus trapping based on `open`)', async () => {
       let focusCounter = jest.fn()
-      let isOpen = writable(false);
+      let isOpen = writable(false)
       render(svelte`
           <button id="trigger" on:click={() => isOpen = !isOpen}>
             Trigger
@@ -157,18 +155,18 @@ describe("Rendering", () => {
         `)
 
       // Wait for the focus to take effect
-      await tick();
+      await tick()
 
       // Let's verify that the Dialog is already there
       expect(getDialog()).not.toBe(null)
       expect(focusCounter).toHaveBeenCalledTimes(0)
 
-      isOpen.set(true);
+      isOpen.set(true)
       // Wait for the store to trigger rerendering
-      await tick();
+      await tick()
 
       // Wait for the focus to take effect
-      await tick();
+      await tick()
 
       // Let's verify that the Dialog is already there
       expect(getDialog()).not.toBe(null)
@@ -177,7 +175,7 @@ describe("Rendering", () => {
 
     it('should be possible to always render the Dialog if we provide it a `static` prop (and enable focus trapping based on `open` with an if block)', async () => {
       let focusCounter = jest.fn()
-      let isOpen = writable(false);
+      let isOpen = writable(false)
       render(svelte`
           <button id="trigger" on:click={() => isOpen = !isOpen}>
             Trigger
@@ -191,18 +189,18 @@ describe("Rendering", () => {
         `)
 
       // Wait for the focus to take effect
-      await tick();
+      await tick()
 
       // Let's verify that the Dialog is already there
       expect(getDialog()).not.toBe(null)
       expect(focusCounter).toHaveBeenCalledTimes(0)
 
-      isOpen.set(true);
+      isOpen.set(true)
       // Wait for the store to trigger rerendering
-      await tick();
+      await tick()
 
       // Wait for the focus to take effect
-      await tick();
+      await tick()
 
       // Let's verify that the Dialog is already there
       expect(getDialog()).not.toBe(null)
@@ -219,7 +217,6 @@ describe("Rendering", () => {
         </Dialog>
       `)
 
-
       // Let's verify that the Dialog is already there
       expect(getDialog()).not.toBe(null)
       expect(focusCounter).toHaveBeenCalledTimes(0)
@@ -233,20 +230,20 @@ describe("Rendering", () => {
           </ManagedDialog>
         `)
 
-      assertDialog({ state: DialogState.InvisibleHidden })
+      assertDialog({state: DialogState.InvisibleHidden})
       expect(focusCounter).toHaveBeenCalledTimes(0)
 
       // Let's open the Dialog, to see if it is not hidden anymore
       await click(document.getElementById('trigger'))
       expect(focusCounter).toHaveBeenCalledTimes(1)
 
-      assertDialog({ state: DialogState.Visible })
+      assertDialog({state: DialogState.Visible})
 
       // Let's close the Dialog
       await press(Keys.Escape)
       expect(focusCounter).toHaveBeenCalledTimes(1)
 
-      assertDialog({ state: DialogState.InvisibleHidden })
+      assertDialog({state: DialogState.InvisibleHidden})
     })
 
     it(
@@ -293,16 +290,16 @@ describe("Rendering", () => {
 
         assertDialogOverlay({
           state: DialogState.InvisibleUnmounted,
-          attributes: { id: 'headlessui-dialog-overlay-2' },
+          attributes: {id: 'headlessui-dialog-overlay-2'}
         })
 
         await click(document.getElementById('trigger'))
 
         assertDialogOverlay({
           state: DialogState.Visible,
-          attributes: { id: 'headlessui-dialog-overlay-2' },
+          attributes: {id: 'headlessui-dialog-overlay-2'}
         })
-        expect(overlay).toHaveBeenCalledWith({ open: true })
+        expect(overlay).toHaveBeenCalledWith({open: true})
       })
     )
   })
@@ -320,11 +317,11 @@ describe("Rendering", () => {
 
         assertDialog({
           state: DialogState.Visible,
-          attributes: { id: 'headlessui-dialog-1' },
+          attributes: {id: 'headlessui-dialog-1'}
         })
         assertDialogTitle({
           state: DialogState.Visible,
-          textContent: JSON.stringify({ open: true }),
+          textContent: JSON.stringify({open: true})
         })
       })
     )
@@ -343,11 +340,11 @@ describe("Rendering", () => {
 
         assertDialog({
           state: DialogState.Visible,
-          attributes: { id: 'headlessui-dialog-1' },
+          attributes: {id: 'headlessui-dialog-1'}
         })
         assertDialogDescription({
           state: DialogState.Visible,
-          textContent: JSON.stringify({ open: true }),
+          textContent: JSON.stringify({open: true})
         })
       })
     )
@@ -367,10 +364,10 @@ describe('Composition', () => {
         </Transition>
       `)
 
-      assertDialog({ state: DialogState.Visible })
+      assertDialog({state: DialogState.Visible})
       assertDialogDescription({
         state: DialogState.Visible,
-        textContent: "Description",
+        textContent: 'Description'
       })
     })
   )
@@ -387,41 +384,38 @@ describe('Composition', () => {
         </Transition>
       `)
 
-      assertDialog({ state: DialogState.InvisibleUnmounted })
+      assertDialog({state: DialogState.InvisibleUnmounted})
     })
   )
 })
 
 describe('Keyboard interactions', () => {
   describe('`Escape` key', () => {
-    it(
-      'should be possible to close the dialog with Escape',
-      async () => {
-        render(svelte`
+    it('should be possible to close the dialog with Escape', async () => {
+      render(svelte`
           <ManagedDialog buttonText="Trigger" buttonProps={{ id: "trigger" }}>
             Contents
             <TestTabSentinel />
           </ManagedDialog>
         `)
 
-        assertDialog({ state: DialogState.InvisibleUnmounted })
+      assertDialog({state: DialogState.InvisibleUnmounted})
 
-        // Open dialog
-        await click(document.getElementById("trigger"))
+      // Open dialog
+      await click(document.getElementById('trigger'))
 
-        // Verify it is open
-        assertDialog({
-          state: DialogState.Visible,
-          attributes: { id: 'headlessui-dialog-1' },
-        })
+      // Verify it is open
+      assertDialog({
+        state: DialogState.Visible,
+        attributes: {id: 'headlessui-dialog-1'}
+      })
 
-        // Close dialog
-        await press(Keys.Escape)
+      // Close dialog
+      await press(Keys.Escape)
 
-        // Verify it is close
-        assertDialog({ state: DialogState.InvisibleUnmounted })
-      }
-    )
+      // Verify it is close
+      assertDialog({state: DialogState.InvisibleUnmounted})
+    })
 
     it(
       'should be possible to close the dialog with Escape, when a field is focused',
@@ -434,7 +428,7 @@ describe('Keyboard interactions', () => {
           </ManagedDialog>
         `)
 
-        assertDialog({ state: DialogState.InvisibleUnmounted })
+        assertDialog({state: DialogState.InvisibleUnmounted})
 
         // Open dialog
         await click(document.getElementById('trigger'))
@@ -442,21 +436,19 @@ describe('Keyboard interactions', () => {
         // Verify it is open
         assertDialog({
           state: DialogState.Visible,
-          attributes: { id: 'headlessui-dialog-1' },
+          attributes: {id: 'headlessui-dialog-1'}
         })
 
         // Close dialog
         await press(Keys.Escape)
 
         // Verify it is close
-        assertDialog({ state: DialogState.InvisibleUnmounted })
+        assertDialog({state: DialogState.InvisibleUnmounted})
       })
     )
 
-    it(
-      'should not be possible to close the dialog with Escape, when a field is focused but cancels the event',
-      async () => {
-        render(svelte`
+    it('should not be possible to close the dialog with Escape, when a field is focused but cancels the event', async () => {
+      render(svelte`
           <ManagedDialog buttonText="Trigger" buttonProps={{ id: "trigger" }}>
             Contents
             <input id="name" on:keydown={(e) => { e.preventDefault(); e.stopPropagation(); } }>
@@ -464,23 +456,23 @@ describe('Keyboard interactions', () => {
           </ManagedDialog>
         `)
 
-        assertDialog({ state: DialogState.InvisibleUnmounted })
+      assertDialog({state: DialogState.InvisibleUnmounted})
 
-        // Open dialog
-        await click(document.getElementById('trigger'))
+      // Open dialog
+      await click(document.getElementById('trigger'))
 
-        // Verify it is open
-        assertDialog({
-          state: DialogState.Visible,
-          attributes: { id: 'headlessui-dialog-1' },
-        })
-
-        // Try to close the dialog
-        await press(Keys.Escape)
-
-        // Verify it is still open
-        assertDialog({ state: DialogState.Visible })
+      // Verify it is open
+      assertDialog({
+        state: DialogState.Visible,
+        attributes: {id: 'headlessui-dialog-1'}
       })
+
+      // Try to close the dialog
+      await press(Keys.Escape)
+
+      // Verify it is still open
+      assertDialog({state: DialogState.Visible})
+    })
   })
 })
 
@@ -500,13 +492,13 @@ describe('Mouse interactions', () => {
       await click(document.getElementById('trigger'))
 
       // Verify it is open
-      assertDialog({ state: DialogState.Visible })
+      assertDialog({state: DialogState.Visible})
 
       // Click to close
       await click(getDialogOverlay())
 
       // Verify it is closed
-      assertDialog({ state: DialogState.InvisibleUnmounted })
+      assertDialog({state: DialogState.InvisibleUnmounted})
     })
   )
 
@@ -527,13 +519,13 @@ describe('Mouse interactions', () => {
       await click(document.getElementById('trigger'))
 
       // Verify it is open
-      assertDialog({ state: DialogState.Visible })
+      assertDialog({state: DialogState.Visible})
 
       // Click on an element inside the overlay
       await click(getByText('hi'))
 
       // Verify it is still open
-      assertDialog({ state: DialogState.Visible })
+      assertDialog({state: DialogState.Visible})
     })
   )
 
@@ -551,13 +543,13 @@ describe('Mouse interactions', () => {
       await click(getByText('Trigger'))
 
       // Verify it is open
-      assertDialog({ state: DialogState.Visible })
+      assertDialog({state: DialogState.Visible})
 
       // Click the body to close
       await click(document.body)
 
       // Verify it is closed
-      assertDialog({ state: DialogState.InvisibleUnmounted })
+      assertDialog({state: DialogState.InvisibleUnmounted})
 
       // Verify the button is focused
       assertActiveElement(getByText('Trigger'))
@@ -579,13 +571,13 @@ describe('Mouse interactions', () => {
       await click(getByText('Trigger'))
 
       // Verify it is open
-      assertDialog({ state: DialogState.Visible })
+      assertDialog({state: DialogState.Visible})
 
       // Click the button to close (outside click)
       await click(getByText('Hello'))
 
       // Verify it is closed
-      assertDialog({ state: DialogState.InvisibleUnmounted })
+      assertDialog({state: DialogState.InvisibleUnmounted})
 
       // Verify the button is focused
       assertActiveElement(getByText('Hello'))
@@ -607,7 +599,7 @@ describe('Mouse interactions', () => {
       `)
 
       // Verify it is open
-      assertDialog({ state: DialogState.Visible })
+      assertDialog({state: DialogState.Visible})
 
       // Verify that the wrapper function has not been called yet
       expect(wrapperFn).toHaveBeenCalledTimes(0)
@@ -616,7 +608,7 @@ describe('Mouse interactions', () => {
       await click(getDialogOverlay())
 
       // Verify it is closed
-      assertDialog({ state: DialogState.InvisibleUnmounted })
+      assertDialog({state: DialogState.InvisibleUnmounted})
 
       // Verify that the wrapper function has not been called yet
       expect(wrapperFn).toHaveBeenCalledTimes(0)
@@ -638,7 +630,7 @@ describe('Mouse interactions', () => {
       `)
 
       // Verify it is open
-      assertDialog({ state: DialogState.Visible })
+      assertDialog({state: DialogState.Visible})
 
       // Submit the form
       await click(getByText('Submit'))
@@ -662,7 +654,7 @@ describe('Mouse interactions', () => {
       `)
 
       // Verify it is open
-      assertDialog({ state: DialogState.Visible })
+      assertDialog({state: DialogState.Visible})
 
       // Verify that the wrapper function has not been called yet
       expect(wrapperFn).toHaveBeenCalledTimes(0)
@@ -671,7 +663,7 @@ describe('Mouse interactions', () => {
       await click(getByText('Inside'))
 
       // Verify it is closed
-      assertDialog({ state: DialogState.InvisibleUnmounted })
+      assertDialog({state: DialogState.InvisibleUnmounted})
 
       // Verify that the wrapper function has not been called yet
       expect(wrapperFn).toHaveBeenCalledTimes(0)
@@ -681,13 +673,13 @@ describe('Mouse interactions', () => {
 
 describe('Nesting', () => {
   it.each`
-    strategy                            | action
-    ${'with `Escape`'}                  | ${() => press(Keys.Escape)}
-    ${'with `Outside Click`'}           | ${() => click(document.body)}
+    strategy                           | action
+    ${'with `Escape`'}                 | ${() => press(Keys.Escape)}
+    ${'with `Outside Click`'}          | ${() => click(document.body)}
     ${'with `Click on DialogOverlay`'} | ${() => click(getDialogOverlays().pop()!)}
   `(
     'should be possible to open nested Dialog components and close them $strategy',
-    async ({ action }) => {
+    async ({action}) => {
       render(NestedTestComponent)
 
       // Verify we have no open dialogs
@@ -851,4 +843,3 @@ describe('Nesting', () => {
     }
   )
 })
-

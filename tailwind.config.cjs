@@ -1,16 +1,16 @@
 const config = {
-  content: ["./src/**/*.{html,js,svelte,ts,svx}"],
+  content: ['./src/**/*.{html,js,svelte,ts,svx}'],
 
   theme: {
-    extend: {},
+    extend: {}
   },
 
   plugins: [
-    require("@tailwindcss/forms")({
-      strategy: "class",
+    require('@tailwindcss/forms')({
+      strategy: 'class'
     }),
-    require("@tailwindcss/typography"),
-  ],
-};
+    require('@tailwindcss/typography')
+  ]
+}
 
-module.exports = config;
+module.exports = config

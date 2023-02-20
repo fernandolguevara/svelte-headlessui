@@ -1,47 +1,38 @@
 <script lang="ts" context="module">
-  type HandlerType = (event?: CustomEvent) => any;
+  type HandlerType = (event?: CustomEvent) => any
   interface ComponentProps {
-    onChange?: HandlerType;
-    onClose?: HandlerType;
-    onFocus?: HandlerType;
-    onKeydown?: HandlerType;
-    onSubmit?: HandlerType;
-    onClick?: HandlerType;
+    onChange?: HandlerType
+    onClose?: HandlerType
+    onFocus?: HandlerType
+    onKeydown?: HandlerType
+    onSubmit?: HandlerType
+    onClick?: HandlerType
   }
-  type SingleComponent =
-    | string
-    | [typeof SvelteComponent, ComponentProps, TestRendererProps];
-  export type TestRendererProps =
-    | undefined
-    | SingleComponent
-    | SingleComponent[];
+  type SingleComponent = string | [typeof SvelteComponent, ComponentProps, TestRendererProps]
+  export type TestRendererProps = undefined | SingleComponent | SingleComponent[]
 
-  function isSingleComponent(
-    props: SingleComponent | SingleComponent[]
-  ): props is SingleComponent {
+  function isSingleComponent(props: SingleComponent | SingleComponent[]): props is SingleComponent {
     return (
-      typeof props === "string" ||
-      (Array.isArray(props) &&
-        !Array.isArray(props[0]) &&
-        typeof props[0] !== "string")
-    );
+      typeof props === 'string' ||
+      (Array.isArray(props) && !Array.isArray(props[0]) && typeof props[0] !== 'string')
+    )
   }
 </script>
 
 <script lang="ts">
-  import type { SvelteComponent } from "svelte";
+  import type {SvelteComponent} from 'svelte'
 
-  export let allProps: TestRendererProps;
+  export let allProps: TestRendererProps
 
-  let spreadProps = {};
-  let onChange: HandlerType = () => {};
-  let onClose: HandlerType = () => {};
-  let onFocus: HandlerType = () => {};
-  let onKeydown: HandlerType = () => {};
-  let onSubmit: HandlerType = () => {};
-  let onClick: HandlerType = () => {};
-  if (allProps && typeof allProps !== "string" && isSingleComponent(allProps)) {
-    ({
+  let spreadProps = {}
+  let onChange: HandlerType = () => {}
+  let onClose: HandlerType = () => {}
+  let onFocus: HandlerType = () => {}
+  let onKeydown: HandlerType = () => {}
+  let onSubmit: HandlerType = () => {}
+  let onClick: HandlerType = () => {}
+  if (allProps && typeof allProps !== 'string' && isSingleComponent(allProps)) {
+    ;({
       onChange = onChange,
       onClose = onClose,
       onFocus = onFocus,
@@ -49,13 +40,13 @@
       onSubmit = onSubmit,
       onClick = onClick,
       ...spreadProps
-    } = allProps[1] || {});
+    } = allProps[1] || {})
   }
 </script>
 
 {#if allProps}
   {#if isSingleComponent(allProps)}
-    {#if typeof allProps === "string"}
+    {#if typeof allProps === 'string'}
       {allProps}
     {:else}
       <svelte:component

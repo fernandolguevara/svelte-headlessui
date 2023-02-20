@@ -1,9 +1,9 @@
-import svelte from "svelte-inline-compile";
-import { render } from "@testing-library/svelte";
-import Portal from "./Portal.svelte";
-import PortalGroup from "./PortalGroup.svelte";
-import { click } from "$lib/test-utils/interactions";
-import { tick } from "svelte";
+import svelte from 'svelte-inline-compile'
+import {render} from '@testing-library/svelte'
+import Portal from './Portal.svelte'
+import PortalGroup from './PortalGroup.svelte'
+import {click} from '$lib/test-utils/interactions'
+import {tick} from 'svelte'
 
 function getPortalRoot() {
   return document.getElementById('headlessui-portal-root')!

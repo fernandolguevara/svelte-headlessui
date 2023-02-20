@@ -1,8 +1,18 @@
 {
+  "bracketSpacing": false,
+  "useTabs": false,
+  "singleQuote": true,
+  "trailingComma": "none",
+  "semi": false,
+  "tabWidth": 2,
+  "printWidth": 100,
+  "plugins": ["prettier-plugin-svelte"],
+  "pluginSearchDirs": ["."],
   "overrides": [
     {
       "files": "*.svx",
-      "options": { "parser": "mdx" }
-    }
+      "options": {"parser": "mdx"}
+    },
+    {"files": "*.svelte", "options": {"parser": "svelte"}}
   ]
 }

@@ -1,9 +1,9 @@
 export function once<T>(cb: (...args: T[]) => void) {
-  let state = { called: false };
+  const state = {called: false}
 
   return (...args: T[]) => {
-    if (state.called) return;
-    state.called = true;
-    return cb(...args);
-  };
+    if (state.called) return
+    state.called = true
+    return cb(...args)
+  }
 }

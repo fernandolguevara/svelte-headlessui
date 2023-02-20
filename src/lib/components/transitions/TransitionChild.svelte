@@ -1,23 +1,23 @@
 <script lang="ts" context="module">
   export type TTransitionProps = {
-    enter?: string;
+    enter?: string
     /** Classes to add to the transitioning element before the enter phase starts */
-    enterFrom?: string;
+    enterFrom?: string
     /** Classes to add to the transitioning element immediately after the enter phase starts */
-    enterTo?: string;
+    enterTo?: string
     /**
      * Classes to add to the transitioning element once the transition is done.
      * These classes will persist after that until the leave phase
      */
-    entered?: string;
+    entered?: string
     /** Classes to add to the transitioning element during the entire leave phase */
-    leave?: string;
+    leave?: string
     /** Classes to add to the transitioning element before the leave phase starts */
-    leaveFrom?: string;
+    leaveFrom?: string
     /** Classes to add to the transitioning element immediately after the leave phase starts */
-    leaveTo?: string;
+    leaveTo?: string
     /** Whether the element should be unmounted, instead of just hidden, based on the open/closed state */
-    unmount?: boolean;
+    unmount?: boolean
     /**
      * A list of actions to apply to the component's HTML element.
      *
@@ -25,150 +25,147 @@
      *
      * use={[[action1], [action2, action2Options], [action3]]}
      */
-    use?: HTMLActionArray;
+    use?: HTMLActionArray
     /** The class attribute for this component. It will always be present. */
-    class?: string;
+    class?: string
     /** The style attribute for this component. It will always be present. */
-    style?: string;
+    style?: string
     /** The element this component should render as */
-    as?: SupportedAs;
-  };
+    as?: SupportedAs
+  }
 
-  type TTransitionChildProps = TTransitionProps & Omit<TRestProps<"div">, "as">;
+  type TTransitionChildProps = TTransitionProps & Omit<TRestProps<'div'>, 'as'>
 </script>
 
 <script lang="ts">
-  import { createEventDispatcher, onMount, setContext } from "svelte";
-  import { writable } from "svelte/store";
-  import { match } from "$lib/utils/match";
-  import { State, useOpenClosedProvider } from "$lib/internal/open-closed";
-  import { Reason, transition } from "$lib/utils/transition";
-  import type { NestingContextValues } from "$lib/components/transitions/common.svelte";
+  import {createEventDispatcher, onMount, setContext} from 'svelte'
+  import {writable} from 'svelte/store'
+  import {match} from '$lib/utils/match'
+  import {State, useOpenClosedProvider} from '$lib/internal/open-closed'
+  import {Reason, transition} from '$lib/utils/transition'
+  import type {NestingContextValues} from '$lib/components/transitions/common.svelte'
   import {
     hasChildren,
     NESTING_CONTEXT_NAME,
     TreeStates,
     useNesting,
     useParentNesting,
-    useTransitionContext,
-  } from "$lib/components/transitions/common.svelte";
-  import { useId } from "$lib/hooks/use-id";
-  import { forwardEventsBuilder } from "$lib/internal/forwardEventsBuilder";
-  import { get_current_component } from "svelte/internal";
-  import type { SupportedAs } from "$lib/internal/elements";
-  import type { HTMLActionArray } from "$lib/hooks/use-actions";
-  import Render, { RenderStrategy } from "$lib/utils/Render.svelte";
-  import { Features, type TRestProps } from "$lib/types";
+    useTransitionContext
+  } from '$lib/components/transitions/common.svelte'
+  import {useId} from '$lib/hooks/use-id'
+  import {forwardEventsBuilder} from '$lib/internal/forwardEventsBuilder'
+  import {get_current_component} from 'svelte/internal'
+  import type {SupportedAs} from '$lib/internal/elements'
+  import type {HTMLActionArray} from '$lib/hooks/use-actions'
+  import Render, {RenderStrategy} from '$lib/utils/Render.svelte'
+  import {Features, type TRestProps} from '$lib/types'
 
   /***** Props *****/
-  type $$Props = TTransitionChildProps;
+  type $$Props = TTransitionChildProps
 
-  export let as: SupportedAs = "div";
-  export let use: HTMLActionArray = [];
+  export let as: SupportedAs = 'div'
+  export let use: HTMLActionArray = []
 
-  export let enter = "";
-  export let enterFrom = "";
-  export let enterTo = "";
-  export let entered = "";
-  export let leave = "";
-  export let leaveFrom = "";
-  export let leaveTo = "";
+  export let enter = ''
+  export let enterFrom = ''
+  export let enterTo = ''
+  export let entered = ''
+  export let leave = ''
+  export let leaveFrom = ''
+  export let leaveTo = ''
 
   /***** Events *****/
   const dispatch = createEventDispatcher<{
-    afterEnter: null;
-    afterLeave: null;
-    beforeEnter: null;
-    beforeLeave: null;
-  }>();
+    afterEnter: null
+    afterLeave: null
+    beforeEnter: null
+    beforeLeave: null
+  }>()
 
   const forwardEvents = forwardEventsBuilder(get_current_component(), [
-    "beforeEnter",
-    "beforeLeave",
-    "afterEnter",
-    "afterLeave",
-  ]);
+    'beforeEnter',
+    'beforeLeave',
+    'afterEnter',
+    'afterLeave'
+  ])
 
   /***** Component *****/
-  let container: HTMLElement | null = null;
+  let container: HTMLElement | null = null
 
-  let transitionContext = useTransitionContext();
-  let nestingContext = useParentNesting();
+  let transitionContext = useTransitionContext()
+  let nestingContext = useParentNesting()
   let state =
     $transitionContext.initialShow || $$props.unmount !== false
       ? TreeStates.Visible
-      : TreeStates.Hidden;
+      : TreeStates.Hidden
 
-  let initial = true;
-  let id = useId();
-  let isTransitioning = false;
-  $: strategy =
-    $$props.unmount === false ? RenderStrategy.Hidden : RenderStrategy.Unmount;
+  let initial = true
+  let id = useId()
+  let isTransitioning = false
+  $: strategy = $$props.unmount === false ? RenderStrategy.Hidden : RenderStrategy.Unmount
 
   let nesting = writable<NestingContextValues>(
     useNesting(() => {
       // When all children have been unmounted we can only hide ourselves if and only if we are not
       // transitioning ourselves. Otherwise we would unmount before the transitions are finished.
       if (!isTransitioning) {
-        state = TreeStates.Hidden;
-        $nestingContext.unregister(id);
-        dispatch("afterLeave");
+        state = TreeStates.Hidden
+        $nestingContext.unregister(id)
+        dispatch('afterLeave')
       }
     })
-  );
+  )
 
-  onMount(() => $nestingContext.register(id));
+  onMount(() => $nestingContext.register(id))
 
   $: {
-    (() => {
+    ;(() => {
       // If we are in another mode than the Hidden mode then ignore
-      if (strategy !== RenderStrategy.Hidden) return;
-      if (!id) return;
+      if (strategy !== RenderStrategy.Hidden) return
+      if (!id) return
 
       // Make sure that we are visible
       if ($transitionContext.show && state !== TreeStates.Visible) {
-        state = TreeStates.Visible;
-        return;
+        state = TreeStates.Visible
+        return
       }
 
       match(state, {
         [TreeStates.Hidden]: () => $nestingContext.unregister(id),
-        [TreeStates.Visible]: () => $nestingContext.register(id),
-      });
-    })();
+        [TreeStates.Visible]: () => $nestingContext.register(id)
+      })
+    })()
   }
 
-  function splitClasses(classes: string = "") {
-    return classes
-      .split(" ")
-      .filter((className) => className.trim().length > 1);
+  function splitClasses(classes = '') {
+    return classes.split(' ').filter((className) => className.trim().length > 1)
   }
 
-  $: enterClasses = splitClasses(enter);
-  $: enterFromClasses = splitClasses(enterFrom);
-  $: enterToClasses = splitClasses(enterTo);
+  $: enterClasses = splitClasses(enter)
+  $: enterFromClasses = splitClasses(enterFrom)
+  $: enterToClasses = splitClasses(enterTo)
 
-  $: enteredClasses = splitClasses(entered);
+  $: enteredClasses = splitClasses(entered)
 
-  $: leaveClasses = splitClasses(leave);
-  $: leaveFromClasses = splitClasses(leaveFrom);
-  $: leaveToClasses = splitClasses(leaveTo);
+  $: leaveClasses = splitClasses(leave)
+  $: leaveFromClasses = splitClasses(leaveFrom)
+  $: leaveToClasses = splitClasses(leaveTo)
 
-  let mounted = false;
-  onMount(() => (mounted = true));
+  let mounted = false
+  onMount(() => (mounted = true))
 
   function executeTransition(show: boolean, appear: boolean) {
     // Skipping initial transition
-    let skip = initial && !appear;
+    let skip = initial && !appear
 
-    let node = container;
-    if (!node || !(node instanceof HTMLElement)) return;
-    if (skip) return;
+    let node = container
+    if (!node || !(node instanceof HTMLElement)) return
+    if (skip) return
 
-    isTransitioning = true;
+    isTransitioning = true
 
-    if (show) dispatch("beforeEnter");
-    if (!show) dispatch("beforeLeave");
+    if (show) dispatch('beforeEnter')
+    if (!show) dispatch('beforeLeave')
 
     return show
       ? transition(
@@ -178,8 +175,8 @@
           enterToClasses,
           enteredClasses,
           (reason) => {
-            isTransitioning = false;
-            if (reason === Reason.Finished) dispatch("afterEnter");
+            isTransitioning = false
+            if (reason === Reason.Finished) dispatch('afterEnter')
           }
         )
       : transition(
@@ -189,51 +186,46 @@
           leaveToClasses,
           enteredClasses,
           (reason) => {
-            isTransitioning = false;
+            isTransitioning = false
 
-            if (reason !== Reason.Finished) return;
+            if (reason !== Reason.Finished) return
 
             // When we don't have children anymore we can safely unregister from the parent and hide
             // ourselves.
             if (!hasChildren($nesting)) {
-              state = TreeStates.Hidden;
-              $nestingContext.unregister(id);
-              dispatch("afterLeave");
+              state = TreeStates.Hidden
+              $nestingContext.unregister(id)
+              dispatch('afterLeave')
             }
           }
-        );
+        )
   }
 
-  let _cleanup: (() => void) | null | undefined = null;
+  let _cleanup: (() => void) | null | undefined = null
   $: {
     if (mounted) {
       if (_cleanup) {
-        _cleanup();
+        _cleanup()
       }
-      _cleanup = executeTransition(
-        $transitionContext.show,
-        $transitionContext.appear
-      );
-      initial = false;
+      _cleanup = executeTransition($transitionContext.show, $transitionContext.appear)
+      initial = false
     }
   }
 
-  setContext(NESTING_CONTEXT_NAME, nesting);
-  let openClosedState = writable<State>(State.Closed);
-  useOpenClosedProvider(openClosedState);
+  setContext(NESTING_CONTEXT_NAME, nesting)
+  let openClosedState = writable<State>(State.Closed)
+  useOpenClosedProvider(openClosedState)
 
   $: openClosedState.set(
     match(state, {
       [TreeStates.Visible]: State.Open,
-      [TreeStates.Hidden]: State.Closed,
+      [TreeStates.Hidden]: State.Closed
     })
-  );
+  )
 
   // This is not in the base headless UI library, but is needed to prevent re-renders during the transition
   // from blowing away the transition classes
-  $: classes = isTransitioning
-    ? container?.className
-    : `${$$props.class || ""} ${entered}`;
+  $: classes = isTransitioning ? container?.className : `${$$props.class || ''} ${entered}`
 </script>
 
 <Render
@@ -241,7 +233,7 @@
   {as}
   use={[...use, forwardEvents]}
   slotProps={{}}
-  name={"TransitionChild"}
+  name={'TransitionChild'}
   bind:el={container}
   class={classes}
   visible={state === TreeStates.Visible}

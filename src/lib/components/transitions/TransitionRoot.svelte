@@ -1,56 +1,53 @@
 <script lang="ts" context="module">
   export type TTransitionRootProps = TTransitionProps &
-    Omit<TRestProps<"div">, "as"> & {
+    Omit<TRestProps<'div'>, 'as'> & {
       /** Whether the children should be shown */
-      show?: boolean;
+      show?: boolean
       /** Whether the transition should run on initial mount */
-      appear?: boolean;
-    };
+      appear?: boolean
+    }
 </script>
 
 <script lang="ts">
-  import { onMount, setContext } from "svelte";
-  import { writable } from "svelte/store";
-  import { match } from "$lib/utils/match";
-  import { State, useOpenClosed } from "$lib/internal/open-closed";
+  import {onMount, setContext} from 'svelte'
+  import {writable} from 'svelte/store'
+  import {match} from '$lib/utils/match'
+  import {State, useOpenClosed} from '$lib/internal/open-closed'
   import TransitionChild, {
-    type TTransitionProps,
-  } from "$lib/components/transitions/TransitionChild.svelte";
-  import { forwardEventsBuilder } from "$lib/internal/forwardEventsBuilder";
-  import { get_current_component } from "svelte/internal";
-  import type { SupportedAs } from "$lib/internal/elements";
-  import type { HTMLActionArray } from "$lib/hooks/use-actions";
-  import type {
-    NestingContextValues,
-    TransitionContextValues,
-  } from "./common.svelte";
+    type TTransitionProps
+  } from '$lib/components/transitions/TransitionChild.svelte'
+  import {forwardEventsBuilder} from '$lib/internal/forwardEventsBuilder'
+  import {get_current_component} from 'svelte/internal'
+  import type {SupportedAs} from '$lib/internal/elements'
+  import type {HTMLActionArray} from '$lib/hooks/use-actions'
+  import type {NestingContextValues, TransitionContextValues} from './common.svelte'
   import {
     hasChildren,
     NESTING_CONTEXT_NAME,
     TRANSITION_CONTEXT_NAME,
     TreeStates,
-    useNesting,
-  } from "./common.svelte";
-  import type { TRestProps } from "$lib/types";
+    useNesting
+  } from './common.svelte'
+  import type {TRestProps} from '$lib/types'
   const forwardEvents = forwardEventsBuilder(get_current_component(), [
-    "beforeEnter",
-    "beforeLeave",
-    "afterEnter",
-    "afterLeave",
-  ]);
+    'beforeEnter',
+    'beforeLeave',
+    'afterEnter',
+    'afterLeave'
+  ])
 
   /***** Props *****/
-  type $$Props = TTransitionRootProps;
+  type $$Props = TTransitionRootProps
 
-  export let as: SupportedAs = "div";
-  export let use: HTMLActionArray = [];
-  export let show: boolean | undefined = undefined;
-  export let appear = false;
+  export let as: SupportedAs = 'div'
+  export let use: HTMLActionArray = []
+  export let show: boolean | undefined = undefined
+  export let appear = false
 
   /***** Events *****/
 
   /***** Component *****/
-  let openClosedState = useOpenClosed();
+  let openClosedState = useOpenClosed()
 
   function computeShow(
     show: boolean | undefined,
@@ -59,61 +56,53 @@
     if (show === undefined && openClosedState !== undefined) {
       return match(openClosedState, {
         [State.Open]: true,
-        [State.Closed]: false,
-      });
+        [State.Closed]: false
+      })
     }
 
-    return show;
+    return show
   }
 
-  let shouldShow = computeShow(
-    show,
-    openClosedState !== undefined ? $openClosedState : undefined
-  );
+  let shouldShow = computeShow(show, openClosedState !== undefined ? $openClosedState : undefined)
 
-  let initialShow = shouldShow;
+  let initialShow = shouldShow
 
   $: {
-    shouldShow = computeShow(
-      show,
-      openClosedState !== undefined ? $openClosedState : undefined
-    );
+    shouldShow = computeShow(show, openClosedState !== undefined ? $openClosedState : undefined)
     if (shouldShow !== true && shouldShow !== false) {
-      throw new Error(
-        "A <Transition /> is used but it is missing a `show={true | false}` prop."
-      );
+      throw new Error('A <Transition /> is used but it is missing a `show={true | false}` prop.')
     }
   }
-  let state = shouldShow ? TreeStates.Visible : TreeStates.Hidden;
+  let state = shouldShow ? TreeStates.Visible : TreeStates.Hidden
 
   let nestingBag = writable<NestingContextValues>(
     useNesting(() => {
-      state = TreeStates.Hidden;
+      state = TreeStates.Hidden
     })
-  );
+  )
 
-  let initial = true;
-  let transitionBag = writable<TransitionContextValues>();
+  let initial = true
+  let transitionBag = writable<TransitionContextValues>()
   $: transitionBag.set({
     show: !!shouldShow,
     appear: appear || !initial,
-    initialShow: !!initialShow,
-  });
+    initialShow: !!initialShow
+  })
 
   onMount(() => {
-    initial = false;
-  });
+    initial = false
+  })
 
   $: if (!initial) {
     if (shouldShow) {
-      state = TreeStates.Visible;
+      state = TreeStates.Visible
     } else if (!hasChildren($nestingBag)) {
-      state = TreeStates.Hidden;
+      state = TreeStates.Hidden
     }
   }
 
-  setContext(NESTING_CONTEXT_NAME, nestingBag);
-  setContext(TRANSITION_CONTEXT_NAME, transitionBag);
+  setContext(NESTING_CONTEXT_NAME, nestingBag)
+  setContext(TRANSITION_CONTEXT_NAME, transitionBag)
 </script>
 
 {#if state === TreeStates.Visible || $$props.unmount === false}

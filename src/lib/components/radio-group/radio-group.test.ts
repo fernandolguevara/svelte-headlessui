@@ -4,22 +4,22 @@ import {
   assertNotFocusable,
   assertRadioGroupLabel,
   getByText,
-  getRadioGroupOptions,
-} from "$lib/test-utils/accessibility-assertions";
-import { render } from "@testing-library/svelte";
-import { RadioGroup, RadioGroupLabel, RadioGroupOption } from ".";
-import { suppressConsoleLogs } from "$lib/test-utils/suppress-console-logs";
-import { click, Keys, press, shift } from "$lib/test-utils/interactions";
-import svelte from "svelte-inline-compile";
+  getRadioGroupOptions
+} from '$lib/test-utils/accessibility-assertions'
+import {render} from '@testing-library/svelte'
+import {RadioGroup, RadioGroupLabel, RadioGroupOption} from '.'
+import {suppressConsoleLogs} from '$lib/test-utils/suppress-console-logs'
+import {click, Keys, press, shift} from '$lib/test-utils/interactions'
+import svelte from 'svelte-inline-compile'
 
-let mockId = 0;
+let mockId = 0
 jest.mock('../../hooks/use-id', () => {
   return {
-    useId: jest.fn(() => ++mockId),
+    useId: jest.fn(() => ++mockId)
   }
 })
 
-beforeEach(() => mockId = 0)
+beforeEach(() => (mockId = 0))
 beforeAll(() => {
   // jest.spyOn(window, 'requestAnimationFrame').mockImplementation(setImmediate as any)
   // jest.spyOn(window, 'cancelAnimationFrame').mockImplementation(clearImmediate as any)
@@ -46,14 +46,14 @@ describe('Safe guards', () => {
           <RadioGroupOption value="home-delivery">Home delivery</RadioGroupOption>
           <RadioGroupOption value="dine-in">Dine in</RadioGroupOption>
         </RadioGroup>
-      `);
+      `)
 
-      assertRadioGroupLabel({ textContent: 'Pizza Delivery' })
+      assertRadioGroupLabel({textContent: 'Pizza Delivery'})
     })
   )
 
   it('should be possible to render a RadioGroup without options and without crashing', () => {
-    render(RadioGroup, { value: undefined })
+    render(RadioGroup, {value: undefined})
   })
 })
 
@@ -66,7 +66,7 @@ describe('Rendering', () => {
         <RadioGroupOption value="home-delivery">Home delivery</RadioGroupOption>
         <RadioGroupOption value="dine-in">Dine in</RadioGroupOption>
       </RadioGroup>
-    `);
+    `)
 
     expect(getRadioGroupOptions()).toHaveLength(3)
 
@@ -83,7 +83,7 @@ describe('Rendering', () => {
         <RadioGroupOption value="home-delivery">Home delivery</RadioGroupOption>
         <RadioGroupOption value="dine-in">Dine in</RadioGroupOption>
       </RadioGroup>
-    `);
+    `)
 
     expect(getRadioGroupOptions()).toHaveLength(3)
 
@@ -100,7 +100,7 @@ describe('Rendering', () => {
         <RadioGroupOption value="home-delivery">Home delivery</RadioGroupOption>
         <RadioGroupOption value="dine-in">Dine in</RadioGroupOption>
       </RadioGroup>
-    `);
+    `)
 
     expect(getRadioGroupOptions()).toHaveLength(3)
 
@@ -157,7 +157,6 @@ describe('Rendering', () => {
       </RadioGroup>
     `)
 
-
     // Try to click one a few options
     await click(getByText('Pickup'))
     await click(getByText('Dine in'))
@@ -167,7 +166,7 @@ describe('Rendering', () => {
       JSON.stringify({
         checked: false,
         disabled: true,
-        active: false,
+        active: false
       })
     )
 
@@ -187,7 +186,7 @@ describe('Rendering', () => {
       JSON.stringify({
         checked: false,
         disabled: false,
-        active: false,
+        active: false
       })
     )
 
@@ -225,7 +224,7 @@ describe('Rendering', () => {
       JSON.stringify({
         checked: false,
         disabled: true,
-        active: false,
+        active: false
       })
     )
 
@@ -251,7 +250,7 @@ describe('Rendering', () => {
       JSON.stringify({
         checked: false,
         disabled: false,
-        active: false,
+        active: false
       })
     )
 
@@ -261,7 +260,6 @@ describe('Rendering', () => {
     // Make sure that the onChange handler got called
     expect(changeFn).toHaveBeenCalledTimes(1)
   })
-
 })
 
 describe('Keyboard interactions', () => {
@@ -274,7 +272,7 @@ describe('Keyboard interactions', () => {
           <RadioGroupOption value="home-delivery">Home delivery</RadioGroupOption>
           <RadioGroupOption value="dine-in">Dine in</RadioGroupOption>
         </RadioGroup>
-      `);
+      `)
 
       await press(Keys.Tab)
 
@@ -290,7 +288,7 @@ describe('Keyboard interactions', () => {
           <RadioGroupOption value="home-delivery">Home delivery</RadioGroupOption>
           <RadioGroupOption value="dine-in">Dine in</RadioGroupOption>
         </RadioGroup>
-      `);
+      `)
 
       await press(Keys.Tab)
 
@@ -307,7 +305,7 @@ describe('Keyboard interactions', () => {
           <RadioGroupOption value="home-delivery">Home delivery</RadioGroupOption>
           <RadioGroupOption value="dine-in">Dine in</RadioGroupOption>
         </RadioGroup>
-      `);
+      `)
 
       await press(Keys.Tab)
 
@@ -323,7 +321,7 @@ describe('Keyboard interactions', () => {
           <RadioGroupOption value="home-delivery">Home delivery</RadioGroupOption>
           <RadioGroupOption value="dine-in">Dine in</RadioGroupOption>
         </RadioGroup>
-      `);
+      `)
 
       await press(Keys.Tab)
 
@@ -342,7 +340,7 @@ describe('Keyboard interactions', () => {
           <RadioGroupOption value="dine-in">Dine in</RadioGroupOption>
         </RadioGroup>
         <button>After</button>
-      `);
+      `)
 
       await press(Keys.Tab)
       assertActiveElement(getByText('Before'))
@@ -364,8 +362,7 @@ describe('Keyboard interactions', () => {
           <RadioGroupOption value="dine-in">Dine in</RadioGroupOption>
         </RadioGroup>
         <button>After</button>
-      `);
-
+      `)
 
       await press(Keys.Tab)
       assertActiveElement(getByText('Before'))
@@ -388,8 +385,7 @@ describe('Keyboard interactions', () => {
           <RadioGroupOption value="dine-in">Dine in</RadioGroupOption>
         </RadioGroup>
         <button>After</button>
-      `);
-
+      `)
 
       getByText('After')?.focus()
 
@@ -408,8 +404,7 @@ describe('Keyboard interactions', () => {
           <RadioGroupOption value="dine-in">Dine in</RadioGroupOption>
         </RadioGroup>
         <button>After</button>
-      `);
-
+      `)
 
       getByText('After')?.focus()
 
@@ -429,8 +424,7 @@ describe('Keyboard interactions', () => {
           <RadioGroupOption value="dine-in">Dine in</RadioGroupOption>
         </RadioGroup>
         <button>After</button>
-      `);
-
+      `)
 
       getByText('After')?.focus()
 
@@ -449,7 +443,7 @@ describe('Keyboard interactions', () => {
           <RadioGroupOption value="dine-in">Dine in</RadioGroupOption>
         </RadioGroup>
         <button>After</button>
-      `);
+      `)
 
       getByText('After')?.focus()
 
@@ -470,8 +464,7 @@ describe('Keyboard interactions', () => {
           <RadioGroupOption value="dine-in">Dine in</RadioGroupOption>
         </RadioGroup>
         <button>After</button>
-      `);
-
+      `)
 
       getByText('After')?.focus()
 
@@ -492,8 +485,7 @@ describe('Keyboard interactions', () => {
           <RadioGroupOption value="dine-in">Dine in</RadioGroupOption>
         </RadioGroup>
         <button>After</button>
-      `);
-
+      `)
 
       getByText('After')?.focus()
 
@@ -517,8 +509,7 @@ describe('Keyboard interactions', () => {
           <RadioGroupOption value="dine-in">Dine in</RadioGroupOption>
         </RadioGroup>
         <button>After</button>
-      `);
-
+      `)
 
       // Focus the "Before" button
       await press(Keys.Tab)
@@ -552,8 +543,7 @@ describe('Keyboard interactions', () => {
           <RadioGroupOption value="dine-in">Dine in</RadioGroupOption>
         </RadioGroup>
         <button>After</button>
-      `);
-
+      `)
 
       // Focus the "Before" button
       await press(Keys.Tab)
@@ -587,8 +577,7 @@ describe('Keyboard interactions', () => {
           <RadioGroupOption value="dine-in">Dine in</RadioGroupOption>
         </RadioGroup>
         <button>After</button>
-      `);
-
+      `)
 
       // Focus the "Before" button
       await press(Keys.Tab)
@@ -626,8 +615,7 @@ describe('Keyboard interactions', () => {
           <RadioGroupOption value="dine-in">Dine in</RadioGroupOption>
         </RadioGroup>
         <button>After</button>
-      `);
-
+      `)
 
       // Focus the "Before" button
       await press(Keys.Tab)
@@ -665,8 +653,7 @@ describe('Keyboard interactions', () => {
           <RadioGroupOption value="dine-in">Dine in</RadioGroupOption>
         </RadioGroup>
         <button>After</button>
-      `);
-
+      `)
 
       // Focus the "Before" button
       await press(Keys.Tab)
@@ -699,7 +686,7 @@ describe('Keyboard interactions', () => {
           <RadioGroupOption value="dine-in">Dine in</RadioGroupOption>
         </RadioGroup>
         <button>After</button>
-      `);
+      `)
 
       // Focus the "Before" button
       await press(Keys.Tab)
@@ -734,7 +721,7 @@ describe('Mouse interactions', () => {
         <RadioGroupOption value="dine-in">Dine in</RadioGroupOption>
       </RadioGroup>
       <button>After</button>
-    `);
+    `)
 
     await click(getByText('Home delivery'))
 
@@ -759,7 +746,7 @@ describe('Mouse interactions', () => {
         <RadioGroupOption value="dine-in">Dine in</RadioGroupOption>
       </RadioGroup>
       <button>After</button>
-    `);
+    `)
 
     await click(getByText('Home delivery'))
     await click(getByText('Home delivery'))

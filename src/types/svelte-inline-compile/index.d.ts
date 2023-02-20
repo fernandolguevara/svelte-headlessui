@@ -1,2 +1,2 @@
-declare function svelte(input: any): any;
-export = svelte;
+declare function svelte(input: any): any
+export = svelte

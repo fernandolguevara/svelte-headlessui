@@ -1,75 +1,76 @@
 <script lang="ts" context="module">
-  import { isValidElement, type SupportedAs } from "$lib/internal/elements";
-  import { get_current_component } from "svelte/internal";
+  import {isValidElement, type SupportedAs} from '$lib/internal/elements'
+  import {get_current_component} from 'svelte/internal'
 
   export enum RenderStrategy {
     Unmount,
-    Hidden,
+    Hidden
   }
 </script>
 
 <script lang="ts">
-  import { useActions, type HTMLActionArray } from "$lib/hooks/use-actions";
-  import { forwardEventsBuilder } from "$lib/internal/forwardEventsBuilder";
-  import { Features, type TRenderProps } from "$lib/types";
-  const forwardEvents = forwardEventsBuilder(get_current_component());
+  import {useActions, type HTMLActionArray} from '$lib/hooks/use-actions'
+  import {forwardEventsBuilder} from '$lib/internal/forwardEventsBuilder'
+  import {Features, type TRenderProps} from '$lib/types'
+  const forwardEvents = forwardEventsBuilder(get_current_component())
 
-  type TSlotProps = $$Generic<{}>;
-  type TAsProp = $$Generic<SupportedAs>;
-  type $$Props = TRenderProps<TSlotProps, TAsProp, TAsProp>;
+  type TSlotProps = $$Generic<{}>
+  type TAsProp = $$Generic<SupportedAs>
+  type $$Props = TRenderProps<TSlotProps, TAsProp, TAsProp>
 
-  export let name: string;
-  export let as: TAsProp;
-  export let slotProps: TSlotProps;
+  export let name: string
+  export let as: TAsProp
+  export let slotProps: TSlotProps
+  // A workaround for passing name="" to the element since name is already used
+  // Will not be need when <Render> is replaced with <svelte:element>
+  export let elementName: string | null = null
 
-  export let el: HTMLElement | null = null;
-  export let use: HTMLActionArray = [];
-  export let visible = true;
-  export let features: Features = Features.None;
+  export let el: HTMLElement | null = null
+  export let use: HTMLActionArray = []
+  export let visible = true
+  export let features: Features = Features.None
   // The static and unmount props are only used in conjunction with the render strategies
-  export let unmount = true;
-  let static_ = false;
-  export { static_ as static };
+  export let unmount = true
+  let static_ = false
+  export {static_ as static}
 
-  let classProp: ((props: TSlotProps) => string) | string | undefined =
-    undefined;
-  export { classProp as class };
+  let classProp: ((props: TSlotProps) => string) | string | undefined = undefined
+  export {classProp as class}
 
   // This is not in upstream Headless UI, but we might as well add it here
-  export let style: ((props: TSlotProps) => string) | string | undefined =
-    undefined;
+  export let style: ((props: TSlotProps) => string) | string | undefined = undefined
 
   if (!as) {
-    throw new Error(`<${name}> did not provide an \`as\` value to <Render>`);
+    throw new Error(`<${name}> did not provide an \`as\` value to <Render>`)
   }
 
   if (!isValidElement(as)) {
-    throw new Error(
-      `<${name}> has an invalid or unsupported \`as\` prop: ${as}`
-    );
+    throw new Error(`<${name}> has an invalid or unsupported \`as\` prop: ${as}`)
   }
 
-  $: computedClass =
-    typeof classProp === "function" ? classProp(slotProps) : classProp;
-  $: computedStyle = typeof style === "function" ? style(slotProps) : style;
+  $: computedClass = typeof classProp === 'function' ? classProp(slotProps) : classProp
+  $: computedStyle = typeof style === 'function' ? style(slotProps) : style
 
   $: show =
     visible ||
     (features & Features.Static && static_) ||
-    !(features & Features.RenderStrategy && unmount);
+    !(features & Features.RenderStrategy && unmount)
   $: hidden =
     !visible &&
     !(features & Features.Static && static_) &&
     features & Features.RenderStrategy &&
-    !unmount;
+    !unmount
 
   $: propsWeControl = {
+    name: elementName || undefined,
     class: computedClass,
-    style:
-      `${computedStyle ?? ""}${hidden ? " display: none" : ""}` || undefined,
-  };
+    style: `${computedStyle ?? ''}${hidden ? ' display: none' : ''}` || undefined
+  }
   $: if (propsWeControl.style === undefined) {
-    delete propsWeControl.style;
+    delete propsWeControl.style
+  }
+  $: if (propsWeControl.name === undefined) {
+    delete propsWeControl.name
   }
 </script>
 
@@ -79,7 +80,7 @@
         wrapping each element in its own component; that adds too much
         overhead to bundle size from each component.
        When <svelte:element> is merged in, this nightmare will be fixed. -->
-  {#if as === "a"}
+  {#if as === 'a'}
     <!-- svelte-ignore a11y-missing-attribute -->
     <a
       bind:this={el}
@@ -91,7 +92,7 @@
     >
       <slot />
     </a>
-  {:else if as === "address"}
+  {:else if as === 'address'}
     <address
       bind:this={el}
       use:useActions={use}
@@ -102,7 +103,7 @@
     >
       <slot />
     </address>
-  {:else if as === "article"}
+  {:else if as === 'article'}
     <article
       bind:this={el}
       use:useActions={use}
@@ -113,7 +114,7 @@
     >
       <slot />
     </article>
-  {:else if as === "aside"}
+  {:else if as === 'aside'}
     <aside
       bind:this={el}
       use:useActions={use}
@@ -124,7 +125,7 @@
     >
       <slot />
     </aside>
-  {:else if as === "b"}
+  {:else if as === 'b'}
     <b
       bind:this={el}
       use:useActions={use}
@@ -135,7 +136,7 @@
     >
       <slot />
     </b>
-  {:else if as === "bdi"}
+  {:else if as === 'bdi'}
     <bdi
       bind:this={el}
       use:useActions={use}
@@ -146,7 +147,7 @@
     >
       <slot />
     </bdi>
-  {:else if as === "bdo"}
+  {:else if as === 'bdo'}
     <bdo
       bind:this={el}
       use:useActions={use}
@@ -157,7 +158,7 @@
     >
       <slot />
     </bdo>
-  {:else if as === "blockquote"}
+  {:else if as === 'blockquote'}
     <blockquote
       bind:this={el}
       use:useActions={use}
@@ -168,7 +169,7 @@
     >
       <slot />
     </blockquote>
-  {:else if as === "button"}
+  {:else if as === 'button'}
     <button
       bind:this={el}
       use:useActions={use}
@@ -179,7 +180,7 @@
     >
       <slot />
     </button>
-  {:else if as === "cite"}
+  {:else if as === 'cite'}
     <cite
       bind:this={el}
       use:useActions={use}
@@ -190,7 +191,7 @@
     >
       <slot />
     </cite>
-  {:else if as === "code"}
+  {:else if as === 'code'}
     <code
       bind:this={el}
       use:useActions={use}
@@ -201,7 +202,7 @@
     >
       <slot />
     </code>
-  {:else if as === "data"}
+  {:else if as === 'data'}
     <data
       bind:this={el}
       use:useActions={use}
@@ -212,7 +213,7 @@
     >
       <slot />
     </data>
-  {:else if as === "datalist"}
+  {:else if as === 'datalist'}
     <datalist
       bind:this={el}
       use:useActions={use}
@@ -223,7 +224,7 @@
     >
       <slot />
     </datalist>
-  {:else if as === "dd"}
+  {:else if as === 'dd'}
     <dd
       bind:this={el}
       use:useActions={use}
@@ -234,7 +235,7 @@
     >
       <slot />
     </dd>
-  {:else if as === "dl"}
+  {:else if as === 'dl'}
     <dl
       bind:this={el}
       use:useActions={use}
@@ -245,7 +246,7 @@
     >
       <slot />
     </dl>
-  {:else if as === "dt"}
+  {:else if as === 'dt'}
     <dt
       bind:this={el}
       use:useActions={use}
@@ -256,7 +257,7 @@
     >
       <slot />
     </dt>
-  {:else if as === "div"}
+  {:else if as === 'div'}
     <div
       bind:this={el}
       use:useActions={use}
@@ -267,7 +268,7 @@
     >
       <slot />
     </div>
-  {:else if as === "em"}
+  {:else if as === 'em'}
     <em
       bind:this={el}
       use:useActions={use}
@@ -278,7 +279,7 @@
     >
       <slot />
     </em>
-  {:else if as === "footer"}
+  {:else if as === 'footer'}
     <footer
       bind:this={el}
       use:useActions={use}
@@ -289,7 +290,7 @@
     >
       <slot />
     </footer>
-  {:else if as === "form"}
+  {:else if as === 'form'}
     <form
       bind:this={el}
       use:useActions={use}
@@ -300,7 +301,7 @@
     >
       <slot />
     </form>
-  {:else if as === "h1"}
+  {:else if as === 'h1'}
     <h1
       bind:this={el}
       use:useActions={use}
@@ -311,7 +312,7 @@
     >
       <slot />
     </h1>
-  {:else if as === "h2"}
+  {:else if as === 'h2'}
     <h2
       bind:this={el}
       use:useActions={use}
@@ -322,7 +323,7 @@
     >
       <slot />
     </h2>
-  {:else if as === "h3"}
+  {:else if as === 'h3'}
     <h3
       bind:this={el}
       use:useActions={use}
@@ -333,7 +334,7 @@
     >
       <slot />
     </h3>
-  {:else if as === "h4"}
+  {:else if as === 'h4'}
     <h4
       bind:this={el}
       use:useActions={use}
@@ -344,7 +345,7 @@
     >
       <slot />
     </h4>
-  {:else if as === "h5"}
+  {:else if as === 'h5'}
     <h5
       bind:this={el}
       use:useActions={use}
@@ -355,7 +356,7 @@
     >
       <slot />
     </h5>
-  {:else if as === "h6"}
+  {:else if as === 'h6'}
     <h6
       bind:this={el}
       use:useActions={use}
@@ -366,7 +367,7 @@
     >
       <slot />
     </h6>
-  {:else if as === "header"}
+  {:else if as === 'header'}
     <header
       bind:this={el}
       use:useActions={use}
@@ -377,7 +378,7 @@
     >
       <slot />
     </header>
-  {:else if as === "i"}
+  {:else if as === 'i'}
     <i
       bind:this={el}
       use:useActions={use}
@@ -388,7 +389,7 @@
     >
       <slot />
     </i>
-  {:else if as === "input"}
+  {:else if as === 'input'}
     <input
       bind:this={el}
       use:useActions={use}
@@ -397,7 +398,7 @@
       {...propsWeControl}
       hidden={hidden || undefined}
     />
-  {:else if as === "label"}
+  {:else if as === 'label'}
     <!-- svelte-ignore a11y-label-has-associated-control -->
     <label
       bind:this={el}
@@ -409,7 +410,7 @@
     >
       <slot />
     </label>
-  {:else if as === "li"}
+  {:else if as === 'li'}
     <li
       bind:this={el}
       use:useActions={use}
@@ -420,7 +421,7 @@
     >
       <slot />
     </li>
-  {:else if as === "main"}
+  {:else if as === 'main'}
     <main
       bind:this={el}
       use:useActions={use}
@@ -431,7 +432,7 @@
     >
       <slot />
     </main>
-  {:else if as === "nav"}
+  {:else if as === 'nav'}
     <nav
       bind:this={el}
       use:useActions={use}
@@ -442,7 +443,7 @@
     >
       <slot />
     </nav>
-  {:else if as === "ol"}
+  {:else if as === 'ol'}
     <ol
       bind:this={el}
       use:useActions={use}
@@ -453,7 +454,7 @@
     >
       <slot />
     </ol>
-  {:else if as === "p"}
+  {:else if as === 'p'}
     <p
       bind:this={el}
       use:useActions={use}
@@ -464,7 +465,7 @@
     >
       <slot />
     </p>
-  {:else if as === "section"}
+  {:else if as === 'section'}
     <section
       bind:this={el}
       use:useActions={use}
@@ -475,7 +476,7 @@
     >
       <slot />
     </section>
-  {:else if as === "span"}
+  {:else if as === 'span'}
     <span
       bind:this={el}
       use:useActions={use}
@@ -486,7 +487,7 @@
     >
       <slot />
     </span>
-  {:else if as === "strong"}
+  {:else if as === 'strong'}
     <strong
       bind:this={el}
       use:useActions={use}
@@ -497,7 +498,7 @@
     >
       <slot />
     </strong>
-  {:else if as === "ul"}
+  {:else if as === 'ul'}
     <ul
       bind:this={el}
       use:useActions={use}
